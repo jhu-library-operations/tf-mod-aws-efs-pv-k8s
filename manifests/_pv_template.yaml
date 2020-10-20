@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ${ volume_name }
+spec:
+  capacity:
+    storage: ${ volume_capacity }
+  volumeMode: Filesystem
+  accessModes:
+    - ${ volume_access_mode }
+  persistentVolumeReclaimPolicy: ${ volume_reclaim_policy }
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: ${ fs_id }:/
