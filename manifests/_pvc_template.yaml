@@ -7,6 +7,6 @@ spec:
   volumeName: ${ volume_name }
   accessModes:
     - ${ volume_access_mode }
-  resource:
+  resources:
     requests:
       storage: ${ volume_capacity }
