@@ -28,9 +28,9 @@ resource "aws_security_group" "this" {
 }
 
 resource "aws_efs_mount_target" "this" {
+  count = length(var.subnet_ids)
   file_system_id = aws_efs_file_system.this.id
-  subnet_id = random_shuffle.subnet_id.result[0]
-
+  subnet_id = element(var.subnet_ids, count.index)
   security_groups = [ aws_security_group.this.id ]
 }
 
