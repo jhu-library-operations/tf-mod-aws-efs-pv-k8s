@@ -37,7 +37,7 @@ resource "aws_efs_mount_target" "this" {
 
 data "template_file" "pv_manifest" {
   count = length(var.namespaces)
-  template = "${file("${path.module}/manifests/_pv_template.yaml")}"
+  template = file("${path.module}/manifests/_pv_template.yaml")
   vars = {
     fs_id = element(aws_efs_file_system.this.*.id, count.index)
     volume_name = format("%s-%s", var.volume_label, element(var.namespaces, count.index))
@@ -57,7 +57,7 @@ resource "local_file" "pv_manifest_rendered" {
 
 data "template_file" "pvc_manifest" {
   count = length(var.namespaces)
-  template = "${file("${path.module}/manifests/_pvc_template.yaml")}"
+  template = file("${path.module}/manifests/_pvc_template.yaml")
   vars = {
     pvc_name = var.volume_label
     volume_name = format("%s-%s", var.volume_label, element(var.namespaces, count.index))
@@ -74,7 +74,7 @@ resource "local_file" "pvc_manifest_rendered" {
 }
 
 data "template_file" "kustomize_volume" {
-  template = "${file("${path.module}/manifests/_kustomization_volume.yaml")}"
+  template = file("${path.module}/manifests/_kustomization_volume.yaml")
 }
 
 resource "local_file" "kustomize_volume" {
