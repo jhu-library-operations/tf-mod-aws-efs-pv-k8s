@@ -4,7 +4,6 @@ locals {
     )
 
   product = setproduct(aws_efs_file_system.this.*.id, var.subnet_ids)
-  
 }
 
 resource "aws_efs_file_system" "this" {
@@ -21,10 +20,10 @@ resource "aws_security_group" "this" {
 
   ingress {
     description = "EFS from K8s cluster"
-    from_port = 2049
-    to_port = 2049
-    protocol = "tcp"
-    cidr_blocks = [ var.vpc_cidr_block ]
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
   }
 }
 
@@ -44,7 +43,7 @@ data "template_file" "pv_manifest" {
     volume_capacity = var.volume_capacity
     volume_access_mode = var.volume_access_mode
     volume_reclaim_policy = var.volume_reclaim_policy
-    vpc_id = var.vpc_id
+    vpc_id                = var.vpc_id
   }
 }
 
@@ -62,7 +61,7 @@ data "template_file" "pvc_manifest" {
     pvc_name = var.volume_label
     volume_name = format("%s-%s", var.volume_label, element(var.namespaces, count.index))
     volume_access_mode = var.volume_access_mode
-    volume_capacity = var.volume_capacity
+    volume_capacity    = var.volume_capacity
   }
 }
 
@@ -81,5 +80,6 @@ resource "local_file" "kustomize_volume" {
   count = length(var.namespaces)
   content = data.template_file.kustomize_volume.rendered
   filename = format("%s/%s/volumes/%s/kustomization.yaml", var.output_path, element(var.namespaces, count.index), var.volume_label)
+
   file_permission = "0600"
 }

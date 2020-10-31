@@ -28,16 +28,16 @@ variable "volume_label" {
 }
 
 variable "volume_capacity" {
-  type = string
+  type    = string
   default = "5Gi"
 }
 
 variable "volume_access_mode" {
-  type = string
+  type    = string
   default = "ReadWriteMany"
 }
 
 variable "volume_reclaim_policy" {
-  type = string
+  type    = string
   default = "Retain"
 }
