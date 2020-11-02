@@ -41,3 +41,22 @@ variable "volume_reclaim_policy" {
   type    = string
   default = "Retain"
 }
+
+# Initial support for access points.  This version
+# assumes one access point per namespace as a requirement
+# that may be a bad assumption and may need refactoring.
+# here is an example argument to the module:
+#   access_points = {
+#    "logging": {  # <-- by name space
+#      uid : 1100
+#      gid : 1100
+#      c_uid : 1100
+#      c_gid : 1100
+#      c_permissions : 755
+#      path : "/graylog"
+#     }
+#   }
+variable "access_points" {
+  type  = map
+  default = {}
+}

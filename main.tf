@@ -9,7 +9,10 @@ locals {
 resource "aws_efs_file_system" "this" {
   count = length(var.namespaces)
   tags = merge(local.tags,
-    { Namespace = element(var.namespaces, count.index) }
+    { 
+      Namespace = element(var.namespaces, count.index) 
+      Name      = format("%s-%s", var.volume_label, element(var.namespaces, count.index))
+    }
     )
 }
 
@@ -34,11 +37,34 @@ resource "aws_efs_mount_target" "this" {
   security_groups = [ aws_security_group.this.id ]
 }
 
+resource "aws_efs_access_point" "this" {
+  count = length(var.namespaces) * (length(var.access_points) > 0 ? 1 : 0)
+  file_system_id = aws_efs_file_system.this[count.index].id
+  posix_user {
+    uid = var.access_points[element(var.namespaces, count.index)].uid
+    gid = var.access_points[element(var.namespaces, count.index)].gid
+    secondary_gids = try(var.access_points[element(var.namespaces, count.index)].secondary_gids, [])
+  } 
+  root_directory {
+    path = var.access_points[element(var.namespaces, count.index)].path
+    creation_info {
+      owner_uid = var.access_points[element(var.namespaces, count.index)].c_uid
+      owner_gid = var.access_points[element(var.namespaces, count.index)].c_gid
+      permissions = var.access_points[element(var.namespaces, count.index)].c_permissions
+    }
+  }
+}
+
+# XXX: Should we be generating kustomization manifests based off of access
+# points if they are defined?  This code assumes only one per namespace
+# That may be a bad assumption, but this will be fine if that assumption 
+# holds.
 data "template_file" "pv_manifest" {
   count = length(var.namespaces)
   template = file("${path.module}/manifests/_pv_template.yaml")
   vars = {
     fs_id = element(aws_efs_file_system.this.*.id, count.index)
+    fs_mount = try(format(":%s", element(aws_efs_access_point.this.*.id, count.index)), "/")
     volume_name = format("%s-%s", var.volume_label, element(var.namespaces, count.index))
     volume_capacity = var.volume_capacity
     volume_access_mode = var.volume_access_mode
