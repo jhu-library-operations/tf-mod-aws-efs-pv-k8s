@@ -14,7 +14,7 @@ resource "aws_efs_file_system" "this" {
 }
 
 resource "aws_security_group" "this" {
-  name = format("k8s-%s-%s-efs_filesystem", var.project_name, var.volume_label)
+  name = format("%s-%s-efs_filesystem", var.project_name, var.volume_label)
   description= format("EFS Persistent Volume for project %s", var.project_name)
   vpc_id = var.vpc_id
 
