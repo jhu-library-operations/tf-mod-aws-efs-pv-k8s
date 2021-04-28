@@ -38,19 +38,19 @@ resource "aws_efs_mount_target" "this" {
 }
 
 resource "aws_efs_access_point" "this" {
-  count = length(var.namespaces) * (length(var.access_points) > 0 ? 1 : 0)
+  count = length(var.namespaces)
   file_system_id = aws_efs_file_system.this[count.index].id
   posix_user {
-    uid = var.access_points[element(var.namespaces, count.index)].uid
-    gid = var.access_points[element(var.namespaces, count.index)].gid
-    secondary_gids = try(var.access_points[element(var.namespaces, count.index)].secondary_gids, [])
+    uid = var.access_points[keys(var.access_points)[0]].uid
+    gid = var.access_points[keys(var.access_points)[0]].gid
+    secondary_gids = try(var.access_points[keys(var.access_points)[0]].secondary_gids, [])
   } 
   root_directory {
-    path = var.access_points[element(var.namespaces, count.index)].path
+    path = var.access_points[keys(var.access_points)[0]].path
     creation_info {
-      owner_uid = var.access_points[element(var.namespaces, count.index)].c_uid
-      owner_gid = var.access_points[element(var.namespaces, count.index)].c_gid
-      permissions = var.access_points[element(var.namespaces, count.index)].c_permissions
+      owner_uid = var.access_points[keys(var.access_points)[0]].c_uid
+      owner_gid = var.access_points[keys(var.access_points)[0]].c_gid
+      permissions = var.access_points[keys(var.access_points)[0]].c_permissions
     }
   }
 }

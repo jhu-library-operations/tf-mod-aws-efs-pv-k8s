@@ -58,5 +58,11 @@ variable "volume_reclaim_policy" {
 #   }
 variable "access_points" {
   type  = map
+  validation {
+    condition = (
+      length(var.access_points) == 1
+    )
+    error_message = "The var.access_points should contain 1 entry, the permissions to map."
+  }
   default = {}
 }
