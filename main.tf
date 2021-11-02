@@ -91,6 +91,36 @@ data "template_file" "pvc_manifest" {
   }
 }
 
+resource "helm_release" "persistentvolume" {
+  # Only run if var.generate_kustomize_files is set to false
+  count = var.generate_kustomize_files ? 0 : length(var.namespaces)
+  name = format("%s-%s", var.volume_label, element(var.namespaces, count.index))
+  repository = var.helm_repository
+  chart = "aws-efs-pv"
+  version = var.helm_chart_version
+
+  set {
+    name = "Namespace"
+    value = element(var.namespaces, count.index)
+  }
+
+  set {
+    name = "size"
+    value = var.volume_capacity
+  }
+
+  set {
+    name = "reclaimpolicy"
+    value = var.volume_reclaim_policy
+  }
+  
+  set {
+    name = "handle"
+    value = try(format("%s:%s", element(aws_efs_file_system.this.*.id, count.index),
+      element(aws_efs_access_point.this.*.id, count.index)), format("%s", element(aws_efs_file_system.this.*.id, count.index)))
+  }
+}
+
 resource "local_file" "pvc_manifest_rendered" {
   count = length(var.namespaces)
   content = element(data.template_file.pvc_manifest.*.rendered, count.index)
@@ -108,4 +138,24 @@ resource "local_file" "kustomize_volume" {
   filename = format("%s/%s/volumes/%s/kustomization.yaml", var.output_path, element(var.namespaces, count.index), var.volume_label)
 
   file_permission = "0600"
+}
+
+resource "helm_release" "persistentvolumeclaim" {
+  depends_on = [ helm_release.persistentvolume ]
+  count = var.generate_kustomize_files ? 0 : length(var.namespaces)
+  name = format("%s-%s", var.volume_label, element(var.namespaces, count.index))
+  namespace = element(var.namespaces, count.index)
+  repository = var.helm_repository
+  chart = "aws-efs-pvc"
+  version = "0.1.0"
+
+  set {
+    name = "volumename"
+    value = format("%s-%s", var.volume_label, element(var.namespaces, count.index))
+  }
+
+  set {
+    name =  "size"
+    value = var.volume_capacity
+  }
 }

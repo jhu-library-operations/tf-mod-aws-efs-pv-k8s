@@ -42,6 +42,31 @@ variable "volume_reclaim_policy" {
   default = "Retain"
 }
 
+# Helm related variables
+variable "generate_kustomize_files" {
+  description = "Determines if the module will generate kustomization files. Otherwise, uses helm. Default: true"
+  type    = bool
+  default = true
+}
+
+variable "helm_repository" {
+  description = "Where does the helm chart live? Default: https://derekbelrose.github.io/helm-charts"
+  type = string
+  default = "https://derekbelrose.github.io/helm-charts"
+}
+
+variable "helm_chart_version" {
+  description = "The version of the helm chart to use to create this PV"
+  type = string
+  default = "0.2.0"
+}
+
+variable "pvc_helm_chart_version" {
+  description = "The version of the helm chart to use to create this PV"
+  type = string
+  default = "0.1.0"
+}
+
 # Initial support for access points.  This version
 # assumes one access point per namespace as a requirement
 # that may be a bad assumption and may need refactoring.
