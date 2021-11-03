@@ -80,24 +80,6 @@ resource "local_file" "pv_manifest_rendered" {
   file_permission = "0600"
 }
 
-data "template_file" "pvc_manifest" {
-  count = length(var.namespaces)
-  template = file("${path.module}/manifests/_pvc_template.yaml")
-  vars = {
-    pvc_name = var.volume_label
-    volume_name = format("%s-%s", var.volume_label, element(var.namespaces, count.index))
-    volume_access_mode = var.volume_access_mode
-    volume_capacity    = var.volume_capacity
-  }
-}
-
-resource "local_file" "pvc_manifest_rendered" {
-  count = length(var.namespaces)
-  content = element(data.template_file.pvc_manifest.*.rendered, count.index)
-  filename = format("%s/%s/volumes/%s/pvc.yaml", var.output_path, element(var.namespaces, count.index), var.volume_label)
-  file_permission = "0600"
-}
-
 data "template_file" "kustomize_volume" {
   template = file("${path.module}/manifests/_kustomization_volume.yaml")
 }
